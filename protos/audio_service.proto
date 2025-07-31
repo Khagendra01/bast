@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package audio_service;
+
+// Audio generation service
+service AudioService {
+  // Generate audio from text and return S3 URL
+  rpc GenerateAudio(GenerateAudioRequest) returns (GenerateAudioResponse);
+}
+
+// Request message for audio generation
+message GenerateAudioRequest {
+  string id = 1;
+  string text = 2;
+}
+
+// Response message with S3 URL
+message GenerateAudioResponse {
+  string id = 1;
+  string s3_url = 2;
+  bool success = 3;
+  string error_message = 4;
+} 

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  voice-server:
+    build: .
+    ports:
+      - "50051:50051"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_FOLDER_PATH=${S3_FOLDER_PATH:-audio-files}
+      - GRPC_PORT=50051
+    volumes:
+      - ./models:/app/models  # Optional: mount models directory for persistence
+      - ./logs:/app/logs      # Optional: mount logs directory
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import grpc; import audio_service_pb2_grpc; channel = grpc.insecure_channel('localhost:50051'); stub = audio_service_pb2_grpc.AudioServiceStub(channel); print('Health check passed')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s 
